@@ -14,7 +14,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 
 class model (BaseEstimator):
-    def __init__(self,classifier=RandomForestClassifier(n_estimators=10, max_depth=None)):
+    def __init__(self,classifier=RandomForestClassifier(n_estimators=80, max_depth=None, max_features='auto')):
         '''
         This constructor is supposed to initialize data members.
         Use triple quotes for function documentation. 
