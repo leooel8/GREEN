@@ -12,9 +12,14 @@ from os.path import isfile
 from sklearn.base import BaseEstimator
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.multiclass import OneVsOneClassifier
+from sklearn.svm import LinearSVC
+from sklearn.linear_model import SGDClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn import neighbors
 
 class model (BaseEstimator):
-    def __init__(self,classifier=RandomForestClassifier(n_estimators=80, max_depth=None, max_features='auto')):
+    def __init__(self,classifier=RandomForestClassifier(n_estimators=180, max_depth=None, max_features='auto')):
         '''
         This constructor is supposed to initialize data members.
         Use triple quotes for function documentation. 
@@ -82,7 +87,9 @@ class model (BaseEstimator):
             y = self.classifier.predict(X)
         
         return y
-
+    def get_classes(self):
+        return self.clf.classes_
+    
     def save(self, path="./"):
         file = open(path + '_model.pickle', "wb")
         pickle.dump(self, file)
