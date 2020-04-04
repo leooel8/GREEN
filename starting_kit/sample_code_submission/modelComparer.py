@@ -56,9 +56,17 @@ class modelComparer(BaseEstimator):
         print("'",name,"' ajouté..")
     
     '''
+        Fonction 'getClassifier'
+            @param clfNum: l'indice du classifier que l'on veut récupérer
+            
+            Renvoie le classifier du tableau de classifier dont l'indice est passé en paramètre
+    '''
+    def getClassifier(self, clfNum):
+        return self.clfTab[clfNum - 1][1]
+    '''
         Fonction 'showClasses'
         
-            affiche les modèles actuellement présents dans le tableau des modèles 'clfTab'
+            Affiche les modèles actuellement présents dans le tableau des modèles 'clfTab'
     '''
     def showClasses(self):
         for i in range (0,len(self.clfTab)):
