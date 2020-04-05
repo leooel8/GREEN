@@ -22,6 +22,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import validation_curve
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.model_selection import GridSearchCV
 
 from libscores import get_metric
 metric_name, scoring_function = get_metric()
@@ -249,6 +250,23 @@ class modelComparer(BaseEstimator):
         print("=================================================================")
         print("=================================================================")
     
+    '''
+        Fonction showGridSearchCV
+    '''
+    def showGridSearchCV(self, clfNum, X_train, Y_train,X_valid,Y_valid, paramGrid, crossValNum):
+        grid = GridSearchCV(self.clfTab[clfNum - 1][1], paramGrid, cv = crossValNum)
+        grid.fit(X_train,Y_train)
+        print("=================================================================")
+        print("=================================================================")
+        print("                Recherche des meilleurs paramètres               ")
+        print("   Classifier utilisé: Classifier ", clfNum, " : ", self.clfTab[clfNum - 1][0])
+        print(" ----------------------------RESULTATS---------------------------")
+        print(" -> Meilleur score d'apprentissage obtenue: ", grid.best_score_, ";")
+        print(" -> Paramètres correspondants: ", grid.best_params_, ";")
+        temp = grid.best_estimator_
+        print(" -> Score de Validation obtenu avec ces paramètres: ", temp.score(X_valid, Y_valid))
+        print("=================================================================")
+        print("=================================================================")
     '''
         Les fontions 'save' et 'load' sont les mêmes foncitons que pour les autres versions de 'model.py' à l'exception du fait qu'un paramètre 'clfNum' leur a été ajouté. Ce paramètre permet de choisir lequel des modèles présents dans l'instance sera utilisé dans les deux fonctions
     '''
