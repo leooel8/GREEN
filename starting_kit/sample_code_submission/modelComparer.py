@@ -23,62 +23,64 @@ from sklearn.model_selection import validation_curve
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import GridSearchCV
-
+score_dir = 'scoring_program/'
+from sys import path
 from libscores import get_metric
 metric_name, scoring_function = get_metric()
 
-''' 
+
+'''
    Classe "modelComparison"
-   
+
        L'intérêt de cette classe est de pouvoir utiliser plusieurs modèles facilement, et de pouvoir les comparer de manière simple et efficace. On a accès aux fonctions de base d'un modèle (fit, predict) mais aussi de Cross-validation et de ValidationCurve pour pouvoir améliorer et valider un modèle.
-       
-   
-'''    
+
+
+'''
 class modelComparer(BaseEstimator):
     '''
         Constructeur
             @param classifier: un modèle
             @param name: le nom que l'on veut donner à notre modèle
-            
+
             Crée un tableau composé d'un seul modèle
     '''
     def __init__(self, name,classifier):
         self.clfTab = [[name,classifier]]
-     
+
     '''
         Fonction 'addClassifier'
             @param name: le nom que l'on veut donner au modèle à ajouter
             @param classifier: le modèle à ajouter
-            
+
             Ajoute à l'instance un modèle dans le tableau des modèles 'clfTab'
     '''
     def addClassifier(self,name,classifier):
         self.clfTab.append([name,classifier])
         print("'",name,"' ajouté..")
-    
+
     '''
         Fonction 'getClassifier'
             @param clfNum: l'indice du classifier que l'on veut récupérer
-            
+
             Renvoie le classifier du tableau de classifier dont l'indice est passé en paramètre
     '''
     def getClassifier(self, clfNum):
         return self.clfTab[clfNum - 1][1]
     '''
         Fonction 'showClasses'
-        
+
             Affiche les modèles actuellement présents dans le tableau des modèles 'clfTab'
     '''
     def showClasses(self):
         for i in range (0,len(self.clfTab)):
             print("Classifier", i + 1, ":", self.clfTab[i][0], ";")
-    
+
     '''
         Fonction 'fitOne'
             @param clfNum: l'indice du modèle pour lequel on veut appliquer la fontion 'fit'
             @param X: l'ensemble des données sur lesquelles le modèle sera entrainé
             @param y: l'ensemble des labels sur lesquels le modèle sera entrainé
-            
+
             Applique la fonction 'fit' au modèle dont l'indice est passé en paramètre
     '''
     def fitOne(self,clfNum,X,y):
@@ -86,12 +88,12 @@ class modelComparer(BaseEstimator):
         self.clfTab[clfNum - 1][1].fit(X,y)
         print("DONE")
         return self
-    
+
     '''
         Fonction 'fitAll'
             @param X: l'ensemble des données sur lesquelles les modèles seront entrainés
             @param y: l'ensemble des labels sur lesquels les modèles seront entrainés
-            
+
             Applique la fonction 'fit' à tous les modèles
     '''
     def fitAll(self,X,y):
@@ -100,48 +102,48 @@ class modelComparer(BaseEstimator):
             self.clfTab[i][1].fit(X,y)
         print("DONE")
         return self
-    
+
     '''
         Fonction 'predictOne'
             @param clfNum: l'indice du modèle pour lequel on veut appliquer la fonction 'predict'
             @param X: l'ensemble des données sur lesquelles le modèle effectuera une prédiction
-            
+
             Applique la fonction 'predict' au modèle dont l'indice est passé en paramètre
     '''
     def predictOne(self,clfNum,X):
         return self.clfTab[clfNum - 1][1].predict(X)
-    
+
     '''
         Fonction 'predictAll'
             @param X: l'ensemble des données sur lesquelles les modèles effectueront une prédiction
             @param y: l'ensemble des labels sur lesquels les modèles effectueront une prédiction
-            
+
             Applique la fonction 'predict' à tous les modèles
     '''
     def predictAll(self,X,Y):
         for i in range (0,len(self.clfTab)):
             Y_hat = self.clfTab[i][1].predict(X)
             print("Classifier", i + 1, ":", self.clfTab[i][0], "PredictionScore:",scoring_function(Y,Y_hat))
-    
+
     '''
         Fontion 'predict_proba'
             @param clfNum: l'indice du modèle sur lequel appliquer la fonctioin 'predict_proba'
             @param X: l'ensemble des données sur lesquelles appliquer la fonction 'predict_proba'
-            
+
             Applique la fonction 'predict_proba' au modèle dont l'indice est passé en paramètre
     '''
     def predict_proba(self,clfNum,X):
         return self.clfTab[clfNum - 1][1].predict_proba(X)
-    
-    
+
+
     '''
         showPrediction
                 @param clfNum: l'indice du classifier dont on veut afficher les résultats
                 @param X: l'ensemble des données sur lesquelles les modèles effectueront une prédiction
-                @param y: l'ensemble des labels sur lesquels les modèles effectueront une prédiction 
-                
+                @param y: l'ensemble des labels sur lesquels les modèles effectueront une prédiction
+
                 Affiche un graphe pour visualiser le fonctionnement des prédictions du modèle
-                
+
                 WARNING 04/04/20: NE FONCTIONNE PAS
     '''
     def showPrediction (self, clfNum, X,Y):
@@ -151,21 +153,21 @@ class modelComparer(BaseEstimator):
         print(" Affichage des prédictions par le modèle")
         plt.scatter(X,Y)
         plt.plot(X,prediction,c='r',lw=3)
-        
-        
+
+
     '''
         Fonction 'crossValidationAll'
             @param X: l'ensemble des données sur lesquelles sera basé la cross-validation
             @param Y: l'ensemble des labels sur lesquels sera basé la cross-validation
             @param crossValNum: le nombre de découpage différent des données dans la cross-validation
-            
+
             Effectue la cross-validation de tous les modèles sur les données passées en paramètre
     '''
     def crossValidationAll(self,X,Y,crossValNum):
         for i in range (0,len(self.clfTab)):
             crossValScore=cross_val_score(self.clfTab[i][1],X,Y,cv=crossValNum)
             print("Classifier", i + 1, ":", self.clfTab[i][0], "Cross Validation Score:",crossValScore.mean())
-    
+
     '''
         Fonction 'comparingFunction'
             @param X_train: ensemble des données d'entrainement
@@ -173,14 +175,14 @@ class modelComparer(BaseEstimator):
             @param X_valid: ensemble des données de validation
             @param Y_valid: ensemble des labels de validation
             @param crossValNum: le nombre de découpage différent des données lors des cross-validations
-            
-            Cette fonction propose après son exécution, un affichage des scores de validation, ainsi que des scores de cross-validation pour chacuns des classifiers présents dans l'instance. De plus, la fonction indique à la suite les classifiers le plus performant pour les parties Validation et Cross-validation 
+
+            Cette fonction propose après son exécution, un affichage des scores de validation, ainsi que des scores de cross-validation pour chacuns des classifiers présents dans l'instance. De plus, la fonction indique à la suite les classifiers le plus performant pour les parties Validation et Cross-validation
     '''
     def comparingFunction(self,X_train,Y_train,X_valid,Y_valid,crossValNum):
         for i in range (0,len(self.clfTab)):
-            currentY_hat = self.clfTab[i][1].predict(X_valid) 
+            currentY_hat = self.clfTab[i][1].predict(X_valid)
             scorePredict = scoring_function(Y_valid,currentY_hat)
-            currentCvVal = cross_val_score(self.clfTab[i][1],X_train,Y_train,cv=crossValNum).mean()
+            currentCvVal = cross_val_score(self.clfTab[i][1],X_train,Y_train,cv=crossValNum, scoring="accuracy").mean()
             if i == 0:
                 allTab = [[self.clfTab[0][0],scorePredict,currentCvVal]]
             if i != 0:
@@ -210,8 +212,8 @@ class modelComparer(BaseEstimator):
         print("                  End of Comparing                 ")
         print("===================================================")
         print("===================================================")
-        
-        
+
+
         '''
             Fonction 'showValidationCurve'
                 @param clfNum: indice du modèle pour lequel on veut utiliser la fonction de ValidationCurve
@@ -221,14 +223,14 @@ class modelComparer(BaseEstimator):
                 @param borneInf: la valeur de la borne inferieur de l'intervalle dans lequel devront se trouver les différentes valeurs que prendra le parmètre
                 @param borneSup: la valeur de la borne superieur de l'intervalle dans lequel devront se trouver les différentes valeurs que prendra le parmètre
                 @param crossValNum: la fonction ValidationCurve utilisant la Cross-Validation, ce paramètre indiquera le nombre de différents découpage qui sera fait dans la Cross-Validation
-                
+
                 Cette fonction affiche un graphe indiquant l'évolution des scores de validation et d'entrainement selon la valeur du paramètre modifié
         '''
     def showValidationCurve(self,clfNum,X_train,Y_train,
                             paramName,borneInf,borneSup,crossValNum):
         k = np.arange(borneInf,borneSup)
         train_score, val_score = validation_curve(self.clfTab[clfNum - 1][1],X_train,Y_train,paramName,k,cv=crossValNum)
-        
+
         print("=================================================================")
         print("=================================================================")
         print(" ")
@@ -249,7 +251,7 @@ class modelComparer(BaseEstimator):
         print(" ")
         print("=================================================================")
         print("=================================================================")
-    
+
     '''
         Fonction showGridSearchCV
     '''
@@ -274,12 +276,12 @@ class modelComparer(BaseEstimator):
         file = open(path + '_model.pickle', "wb")
         pickle.dump(self.clfTab[clfNum][1], file)
         file.close()
-    
+
     def load(self, clfNum, path="./"):
         modelfile = path + '_model.pickle'
         if isfile(modelfile):
             with open(modelfile, 'rb') as f:
                 self.clfTab[clfNum][1] = pickle.load(f)
             print("Model reloaded from: " + modelfile)
-        
+
         return self.clfTab[clfNum][1]

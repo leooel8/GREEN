@@ -13,20 +13,14 @@ from sklearn.base import BaseEstimator
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.multiclass import OneVsOneClassifier
-from sklearn.svm import LinearSVC
 from sklearn.linear_model import SGDClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn import neighbors
-from sklearn.ensemble import VotingClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.datasets import load_wine
-from preprocessing import Preprocessor
+#from preprocessing import Preprocessor
 #score_dir = 'scoring_program/'
 #from sys import path
 #path.append(score_dir)
@@ -41,7 +35,8 @@ class model (BaseEstimator):
         self.num_feat=1
         self.num_labels=1
         self.is_trained=False
-        self.preprocess = Preprocessor()
+        self.preprocess = PCA()
+        #self.clf = classifier
         self.clf =  Pipeline([
             ('preprocessing', self.preprocess),
             ('classification', RandomForestClassifier(n_estimators=180, max_depth=None, max_features='auto'))
@@ -63,6 +58,7 @@ class model (BaseEstimator):
 
         self.is_trained=True
         print("FIT DONE")
+
     def predict(self, X):
         print("PREDICT")
         num_test_samples = X.shape[0]
