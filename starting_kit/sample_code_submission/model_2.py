@@ -13,7 +13,13 @@ import sys
 import pickle
 import numpy as np   # We recommend to use numpy arrays
 from os.path import isfile
+score_dir = 'scoring_program/'
+problem_dir = 'ingestion_program/'
 from sys import path
+path.append(score_dir)
+path.append(problem_dir)
+from libscores import get_metric
+metric_name, scoring_function = get_metric()
 from preprocessing import Preprocessor
 from sklearn.ensemble import VotingClassifier
 
@@ -34,11 +40,18 @@ from sklearn import ensemble
 '''
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
+from modelComparer import modelComparer
 
 '''
     Imports utiles aux ensembles de données
 '''
-
+from sklearn.datasets import load_wine
+import pandas as pd
+from data_io import read_as_df
+from data_manager import DataManager
+data_dir = 'public_data'
+data_name = 'plankton'
 
 '''
     Notre classe 'model'
@@ -56,13 +69,13 @@ class model (BaseEstimator):
     '''
     def __init__(self,classifier=RandomForestClassifier(n_estimators=180, max_depth=None, max_features='auto')):
         print("CONSTRUCTEUR MODELE")
-        self.classifierUsed = classifier
 
         self.preprocess =  Preprocessor()
+        self.classifierUsed = classifier
         #self.clf = classifier
         PipelineUse =  Pipeline([
             ('preprocessing', self.preprocess),
-            ('classification',self.classifierUsed)
+            ('classification', self.classifierUsed)
         ])
 
         self.clf = VotingClassifier(estimators=[
@@ -149,3 +162,67 @@ class model (BaseEstimator):
     '''
         FIN CLASSE 'model'
     '''
+
+'''
+    Fonction de test utile au choix du modèle et de ses paramètres
+'''
+def test():
+    # Définition de l'ensemnle de données et affichages
+    print("=============================================================")
+    print("=============================================================")
+    print("                      Test de model.py                       ")
+    print("             et comparaison avec d'autres modèles            ")
+    print(" ")
+    print(" ")
+    print("             Chargement des données..")
+    print(" ")
+    data = read_as_df(data_dir  + '/' + data_name)
+    print(data['target'].value_counts())
+    print(" ")
+    print("_____________________________________________________________")
+    print(" ")
+    print(data.head())
+    print(" ")
+    D = DataManager(data_name, data_dir, replace_missing=True)
+    print("_____________________________________________________________")
+    print(" ")
+    print(D)
+    print(" ")
+    print("_____________________________________________________________")
+    print(" ")
+    print(" ")
+    X_t = D.data['X_train']
+    Y = D.data['Y_train']
+    Y = Y.ravel()
+    print("_____________________________________________________________")
+    print(" ")
+    print("     Division des données en deux ensembles (training et validation)")
+    X_train, X_valid, Y_train, Y_valid = train_test_split( X_t, Y, test_size=0.33, random_state=42)
+    print("Dimensions de Y_train")
+    print(Y_train.shape)
+    print("Dimensions de Y_valid")
+    print(Y_valid.shape)
+    print("DONE")
+    print(" ")
+    print(" ")
+    print("_____________________________________________________________")
+    print(" Comparaison des modèles : ")
+    print(" ")
+    print(" ")
+    model1 = model()
+    modelTest = modelComparer("Pipeline RandomForestClassifier avec Preprocessor()", model1)
+    modelTest.addClassifier("OneVsOneClassifier",OneVsOneClassifier(SGDClassifier(random_state=42)))
+    modelTest.addClassifier("AdaBoostClassifier",AdaBoostClassifier(n_estimators=100))
+    modelTest.addClassifier("RandomForestClassifier",RandomForestClassifier(n_estimators=180, max_depth=None, max_features='auto'))
+    modelTest.addClassifier("KNeighborsClassifier",neighbors.KNeighborsClassifier(n_neighbors=7))
+
+    #Fonction 'fit' pour tous les modèles
+    modelTest.fitAll(X_train,Y_train)
+
+    modelTest.comparingFunction(X_train,Y_train,X_valid,Y_valid,5)
+
+if __name__ == "__main__":
+    if sys.argv[1] is not None:
+        data_dir = str(sys.argv[1])
+        print (data_dir)
+    test()
